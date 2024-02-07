@@ -59,4 +59,14 @@ public class User {
     public void setAge(Byte age) {
         this.age = age;
     }
+
+    @Override
+    public String toString() {
+        // будет отображать одну строку таблицы
+        return String.format("id=%d | name=%s | lastName=%s | age=%d",
+                this.id,
+                this.name,
+                this.lastName,
+                this.age);
+    }
 }
