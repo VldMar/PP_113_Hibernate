@@ -14,8 +14,26 @@ public class Util {
     private static final String DB_USER = "root";
     private static final String DB_PSWD = "root_pswd";
 
-    public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(DB_URL, DB_USER, DB_PSWD);
+    private static Connection connection;
+
+    public static Connection getConnection() {
+        try {
+            if (connection == null) {
+                connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PSWD);
+            }
+            return connection;
+        } catch (SQLException sqlEx) {
+            throw new RuntimeException();
+        }
     }
 
+    public static void closeConnection() {
+        try {
+            if (connection != null) {
+                connection.close();
+            }
+        } catch (SQLException sqlEx) {
+            throw new RuntimeException();
+        }
+    }
 }

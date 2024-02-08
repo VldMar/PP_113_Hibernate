@@ -8,19 +8,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDaoJDBCImpl implements UserDao {
-    private final String TABLE_NAME = "users";
+
+    private final Connection conn;
+
     public UserDaoJDBCImpl() {
+        this.conn = Util.getConnection();
     }
 
     public void createUsersTable() {
-        String sql = String.format("CREATE TABLE IF NOT EXISTS %s "
-                + "(id INT AUTO_INCREMENT PRIMARY KEY, "
-                + "name VARCHAR(45) NOT NULL, "
-                + "last_name VARCHAR(45) NOT NULL, "
-                + "age tinyint NOT NULL)", TABLE_NAME);
-
-        try (Connection conn = Util.getConnection();
-             Statement statement = conn.createStatement()) {
+        String sql = """
+                     CREATE TABLE IF NOT EXISTS user
+                     (id INT AUTO_INCREMENT PRIMARY KEY,
+                      name VARCHAR(45) NOT NULL,
+                      last_name VARCHAR(45) NOT NULL,
+                      age tinyint NOT NULL)
+                     """;
+        try (Statement statement = this.conn.createStatement()) {
              statement.execute(sql);
         } catch (SQLException sqlEx) {
             sqlEx.printStackTrace();
@@ -28,30 +31,26 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void dropUsersTable() {
-        try (Connection conn = Util.getConnection();
-             Statement statement = conn.createStatement()) {
-             statement.execute("DROP TABLE IF EXISTS " + TABLE_NAME);
+        try (Statement statement = this.conn.createStatement()) {
+             statement.execute("DROP TABLE IF EXISTS user");
         } catch (SQLException sqlEx) {
             sqlEx.printStackTrace();
         }
     }
 
     public void saveUser(String name, String lastName, byte age) {
-        String sql = String.format("INSERT INTO %s (name, last_name, age) VALUES (?, ?, ?)", TABLE_NAME);
-        try (Connection conn = Util.getConnection();
-            PreparedStatement statement = conn.prepareStatement(sql)) {
+        try (PreparedStatement statement = this.conn.prepareStatement("INSERT INTO user (name, last_name, age) VALUES (?, ?, ?)")) {
             statement.setString(1, name);
             statement.setString(2, lastName);
             statement.setByte(3, age);
-            statement.executeUpdate();
+            statement.execute();
         } catch (SQLException sqlEx) {
             sqlEx.printStackTrace();
         }
     }
 
     public void removeUserById(long id) {
-        try (Connection conn = Util.getConnection();
-            PreparedStatement statement = conn.prepareStatement(String.format("DELETE FROM %s WHERE id=?", TABLE_NAME))) {
+        try (PreparedStatement statement = this.conn.prepareStatement("DELETE FROM user WHERE id=?")) {
             statement.setLong(1, id);
             statement.execute();
         } catch (SQLException sqlEx) {
@@ -61,8 +60,7 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
-        try (Connection conn = Util.getConnection();
-             PreparedStatement statement = conn.prepareStatement(String.format("SELECT * FROM %s", TABLE_NAME));
+        try (PreparedStatement statement = this.conn.prepareStatement("SELECT * FROM user");
              ResultSet result = statement.executeQuery()) {
 
             while (result.next()) {
@@ -74,7 +72,6 @@ public class UserDaoJDBCImpl implements UserDao {
 
                 users.add(user);
             }
-
         } catch (SQLException | NullPointerException ex) {
             ex.printStackTrace();
         }
@@ -83,9 +80,8 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void cleanUsersTable() {
-        try(Connection conn = Util.getConnection();
-            Statement statement = conn.createStatement()) {
-            statement.execute("TRUNCATE TABLE " + TABLE_NAME);
+        try(Statement statement = this.conn.createStatement()) {
+            statement.execute("TRUNCATE TABLE user");
         } catch (SQLException sqlEx) {
             sqlEx.printStackTrace();
         }
