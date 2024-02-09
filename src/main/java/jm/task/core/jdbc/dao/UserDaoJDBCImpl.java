@@ -9,22 +9,20 @@ import java.util.List;
 
 public class UserDaoJDBCImpl implements UserDao {
 
-    private final Connection conn;
+    private final Connection conn = Util.getConnection();
 
     public UserDaoJDBCImpl() {
-        this.conn = Util.getConnection();
     }
 
     public void createUsersTable() {
-        String sql = """
+        try (Statement statement = this.conn.createStatement()) {
+             statement.execute("""
                      CREATE TABLE IF NOT EXISTS user
                      (id INT AUTO_INCREMENT PRIMARY KEY,
                       name VARCHAR(45) NOT NULL,
                       last_name VARCHAR(45) NOT NULL,
                       age tinyint NOT NULL)
-                     """;
-        try (Statement statement = this.conn.createStatement()) {
-             statement.execute(sql);
+                     """);
         } catch (SQLException sqlEx) {
             sqlEx.printStackTrace();
         }
