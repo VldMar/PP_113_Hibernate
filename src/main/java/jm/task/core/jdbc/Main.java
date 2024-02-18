@@ -29,5 +29,6 @@ public class Main {
 
         // закрываем соединение
         Util.closeConnection();
+        Util.closeHibernate();
     }
 }
