@@ -27,23 +27,6 @@ public class Util {
     // Реализация Hibernate
     private static SessionFactory sessionFactory;
 
-    static {
-        try {
-            sessionFactory = new Configuration()
-                    .setProperty("hibernate.connection.driver_class", "com.mysql.cj.jdbc.Driver")
-                    .setProperty("hibernate.connection.url", DB_URL)
-                    .setProperty("hibernate.connection.username", DB_USER)
-                    .setProperty("hibernate.connection.password", DB_PSWD)
-                    .setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect")
-//                    .setProperty("hibernate.show_sql", "true")
-//                    .setProperty("hibernate.format_sql", "true")
-                    .addAnnotatedClass(User.class)
-                    .buildSessionFactory();
-        } catch (Exception ex) {
-            throw new RuntimeException(ex.getMessage());
-        }
-    }
-
     public static Connection getConnection() {
         try {
             if (connection == null) {
@@ -65,7 +48,24 @@ public class Util {
         }
     }
 
+    private static void initializeSessionFactory() {
+        try {
+            sessionFactory = new Configuration()
+                    .setProperty("hibernate.connection.driver_class", "com.mysql.cj.jdbc.Driver")
+                    .setProperty("hibernate.connection.url", DB_URL)
+                    .setProperty("hibernate.connection.username", DB_USER)
+                    .setProperty("hibernate.connection.password", DB_PSWD)
+                    .setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect")
+                    .addAnnotatedClass(User.class)
+                    .buildSessionFactory();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex.getMessage());
+        }
+    }
     public static SessionFactory getSessionFactory() {
+        if (sessionFactory == null) {
+            initializeSessionFactory();
+        }
         return sessionFactory;
     }
 
